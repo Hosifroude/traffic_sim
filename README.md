@@ -33,6 +33,35 @@ npm run build
 
 GitHub Pages で扱いやすいよう、Vite の `base` は相対パス `./` にしています。
 
+
+## GitHub Pages への公開
+
+`main` ブランチへマージまたは直接 push されると、GitHub Actions の `Deploy Pages` ワークフローが Vite の本番ビルドを作成し、生成された `dist/` を GitHub Pages へ自動デプロイします。
+
+公開 URL は通常、リポジトリ名に応じて次の形式になります。
+
+```text
+https://<OWNER>.github.io/<REPOSITORY>/
+```
+
+カスタムドメインを設定している場合は GitHub Pages の設定画面に表示される URL が優先されます。デプロイ完了後の正確な URL は、`Deploy Pages` ワークフローの `github-pages` environment URL から確認できます。
+
+### GitHub 側で必要な設定
+
+1. GitHub リポジトリの **Settings > Pages** を開きます。
+2. **Build and deployment** の **Source** で **GitHub Actions** を選択します。
+3. `main` ブランチへ変更をマージすると、`Deploy Pages` ワークフローが `dist/` を Pages artifact としてアップロードし、GitHub Pages へ公開します。
+
+### ローカルでの確認方法
+
+```bash
+npm install
+npm run build
+npm run preview
+```
+
+GitHub Pages のプロジェクトサイト、ユーザー/Organization サイト、将来的な Capacitor などの WebView 配信でも同じ成果物を扱いやすいよう、Vite の `base` は相対パス `./` にしています。アプリ本体は `src/` 以下に閉じ、Pages 用の設定は GitHub Actions に分離しているため、今後 PWA や Capacitor を追加する場合も既存の UI・シミュレーション層を保ったまま拡張できます。
+
 ## ファイル構成
 
 ```text
