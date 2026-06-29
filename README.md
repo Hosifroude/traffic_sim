@@ -70,3 +70,7 @@ src/
 - PixiJS などへの描画レイヤー差し替え
 - Capacitor による Android アプリ化
 - Playwright などによる UI 回帰テスト
+
+## ビルド検証について
+
+Codex 実行環境では `npm install` が npm registry への HTTP 403 で失敗するため、依存関係のインストール後に実行する `npm run build` は未確認です。npm registry にアクセスできる GitHub Actions 上で `npm install` と `npm run build` を実行し、ビルドを検証します。
