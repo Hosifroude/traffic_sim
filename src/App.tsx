@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActionDrawer } from './components/ActionDrawer';
 import { Controls } from './components/Controls';
 import { Stage } from './components/Stage';
-import { VehiclePanel } from './components/VehiclePanel';
+import { TimelineGrid } from './components/TimelineGrid';
 import { sampleScenario } from './sampleScenario';
 import { findFirstCollision } from './simulation/collision';
 import { simulateScenario } from './simulation/engine';
@@ -24,6 +24,9 @@ export default function App() {
   const [editingActionId, setEditingActionId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<'editor' | 'json'>('editor');
+  const [jsonDraft, setJsonDraft] = useState('');
+  const [jsonError, setJsonError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!playing) return;
@@ -40,7 +43,11 @@ export default function App() {
   const states = useMemo(() => simulateScenario(scenario, time), [scenario, time]);
   const collision = useMemo(() => findFirstCollision(scenario), [scenario]);
   const json = useMemo(() => JSON.stringify(scenario, null, 2), [scenario]);
-  const selectedVehicle = scenario.vehicles.find((vehicle) => vehicle.id === selectedVehicleId);
+
+  useEffect(() => {
+    if (activeTab === 'json') setJsonDraft(json);
+  }, [activeTab, json]);
+
   const editingVehicleId = editingActionId ? parseActionId(editingActionId).vehicleId : selectedVehicleId;
   const editingVehicle = scenario.vehicles.find((vehicle) => vehicle.id === editingVehicleId);
   const editingEvent = editingActionId ? editingVehicle?.events[parseActionId(editingActionId).eventIndex] ?? null : null;
@@ -104,9 +111,23 @@ export default function App() {
   };
 
   const copyJson = async () => {
-    await navigator.clipboard.writeText(json);
+    await navigator.clipboard.writeText(jsonDraft || json);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
+  };
+
+  const loadJson = () => {
+    try {
+      const nextScenario = JSON.parse(jsonDraft) as Scenario;
+      if (!Array.isArray(nextScenario.vehicles) || !nextScenario.map || typeof nextScenario.durationSec !== 'number') {
+        throw new Error('Scenario の必須フィールドが不足しています。');
+      }
+      setScenario(nextScenario);
+      setJsonError(null);
+      setTime((current) => clampTime(current, nextScenario.durationSec));
+    } catch (error) {
+      setJsonError(error instanceof Error ? error.message : 'JSONを読み込めませんでした。');
+    }
   };
 
   return (
@@ -117,15 +138,25 @@ export default function App() {
           <p>車両ごとの操作タイムラインで事故・ヒヤリハット状況を試作します。</p>
         </div>
       </header>
-      <div className="workspace">
-        <Stage scenario={scenario} states={states} selectedVehicleId={selectedVehicleId} collision={collision} onSelectVehicle={setSelectedVehicleId} onOpenVehicleSettings={openVehicleSettings} />
-        <VehiclePanel vehicle={selectedVehicle} selectedActionId={selectedActionId} onSelectAction={selectAction} onOpenAction={openActionSettings} onDeleteAction={deleteAction} />
-      </div>
+      <nav className="tabs" aria-label="編集タブ">
+        <button type="button" className={activeTab === 'editor' ? 'active' : ''} onClick={() => setActiveTab('editor')}>ステージ / タイムライン</button>
+        <button type="button" className={activeTab === 'json' ? 'active' : ''} onClick={() => setActiveTab('json')}>シナリオJSON</button>
+      </nav>
+      {activeTab === 'editor' ? (
+        <div className="editor-stack">
+          <div className="workspace">
+            <Stage scenario={scenario} states={states} selectedVehicleId={selectedVehicleId} collision={collision} onSelectVehicle={setSelectedVehicleId} onOpenVehicleSettings={openVehicleSettings} />
+          </div>
+          <TimelineGrid vehicles={scenario.vehicles} durationSec={scenario.durationSec} currentTime={time} selectedActionId={selectedActionId} onSelectAction={selectAction} onOpenAction={openActionSettings} onDeleteAction={deleteAction} />
+        </div>
+      ) : (
+        <section className="json-panel">
+          <div className="json-header"><h2>Scenario JSON</h2><button onClick={copyJson}>{copied ? 'コピー済み' : 'JSONをコピー'}</button></div>
+          <textarea className="json-editor" value={jsonDraft} onChange={(event) => setJsonDraft(event.target.value)} spellCheck={false} />
+          <div className="json-actions"><button type="button" onClick={loadJson}>JSONを読み込み</button>{jsonError && <p className="json-error">{jsonError}</p>}</div>
+        </section>
+      )}
       <ActionDrawer open={drawerOpen} vehicle={editingVehicle} action={editingEvent} currentTime={time} onClose={() => setDrawerOpen(false)} onSave={saveEvent} />
-      <section className="json-panel">
-        <div className="json-header"><h2>Scenario JSON</h2><button onClick={copyJson}>{copied ? 'コピー済み' : 'JSONをコピー'}</button></div>
-        <pre>{json}</pre>
-      </section>
       <Controls time={time} duration={scenario.durationSec} playing={playing} onStep={(delta) => setTime((current) => clampTime(current + delta, scenario.durationSec))} onToggle={() => setPlaying((value) => !value)} onReset={() => { setPlaying(false); setTime(0); }} />
     </main>
   );
