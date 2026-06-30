@@ -7,6 +7,7 @@ interface Props {
   selectedVehicleId: string;
   collision: CollisionResult;
   onSelectVehicle: (id: string) => void;
+  onOpenVehicleSettings: (id: string) => void;
 }
 
 function Ghosts({ vehicle, durationSec }: { vehicle: Vehicle; durationSec: number }) {
@@ -22,7 +23,7 @@ function Ghosts({ vehicle, durationSec }: { vehicle: Vehicle; durationSec: numbe
   );
 }
 
-export function Stage({ scenario, states, selectedVehicleId, collision, onSelectVehicle }: Props) {
+export function Stage({ scenario, states, selectedVehicleId, collision, onSelectVehicle, onOpenVehicleSettings }: Props) {
   const { stageSize, roadWidth } = scenario.map;
   const half = stageSize / 2;
   return (
@@ -39,6 +40,7 @@ export function Stage({ scenario, states, selectedVehicleId, collision, onSelect
             key={vehicle.id}
             transform={`translate(${vehicle.x} ${vehicle.y}) rotate(${vehicle.headingDeg})`}
             onClick={() => onSelectVehicle(vehicle.id)}
+            onDoubleClick={() => onOpenVehicleSettings(vehicle.id)}
             className="vehicle-hit"
           >
             <rect
