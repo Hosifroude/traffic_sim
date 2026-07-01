@@ -69,21 +69,23 @@ pre { max-height: 300px; overflow: auto; background: #0f172a; color: #d1fae5; bo
 .timeline-card { background: white; border-radius: 20px; padding: 1rem; box-shadow: 0 14px 45px #0f172a1a; min-width: 0; }
 .timeline-title-row { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; margin-bottom: 0.75rem; }
 .timeline-title-row h2 { margin: 0 0 0.25rem; }
+.timeline-heading { min-width: 0; }
+.timeline-target { display: block; max-width: min(58vw, 18rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1rem; color: #1d4ed8; }
+.timeline-legend { margin-top: 0.25rem; color: #64748b; font-size: 0.78rem; }
 .timeline-scroll { overflow: auto; max-height: min(58vh, 620px); border: 1px solid #e2e8f0; border-radius: 16px; background: #f8fafc; }
-.timeline-grid { position: relative; min-width: 888px; }
-.timeline-corner { position: sticky; top: 0; left: 0; z-index: 4; width: 72px; height: 44px; display: grid; place-items: center; background: #172033; color: white; font-weight: 800; border-right: 1px solid #334155; }
-.timeline-columns { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: repeat(6, 136px); height: 44px; }
-.timeline-column-header { display: grid; place-items: center; background: #1e293b; color: white; font-weight: 800; border-right: 1px solid #475569; }
+.timeline-grid { position: relative; min-width: 464px; }
+.timeline-corner { position: sticky; top: 0; left: 0; z-index: 4; width: 56px; height: 40px; display: grid; place-items: center; background: #172033; color: white; font-weight: 800; border-right: 1px solid #334155; }
+.timeline-columns { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: repeat(6, 68px); height: 40px; }
+.timeline-column-header { display: grid; place-items: center; background: #1e293b; color: white; font-weight: 800; border-right: 1px solid #475569; font-size: 0.9rem; letter-spacing: 0.02em; }
 .timeline-body { position: absolute; left: 0; right: 0; }
 .time-tick { position: absolute; left: 0; right: 0; height: 1px; background: #e2e8f0; }
 .time-tick.major { background: #cbd5e1; }
-.time-tick span { position: sticky; left: 0; z-index: 2; display: inline-block; width: 72px; transform: translateY(-50%); padding-right: 0.5rem; text-align: right; color: #475569; font-size: 0.8rem; background: #f8fafc; }
+.time-tick span { position: sticky; left: 0; z-index: 2; display: inline-block; width: 56px; transform: translateY(-50%); padding-right: 0.5rem; text-align: right; color: #475569; font-size: 0.8rem; background: #f8fafc; }
 .timeline-lane { position: absolute; top: 0; bottom: 0; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; background: rgba(255,255,255,0.45); }
-.playhead { position: absolute; left: 72px; right: 0; z-index: 2; height: 0; border-top: 3px solid #ef4444; pointer-events: none; }
-.playhead span { position: sticky; left: 76px; transform: translateY(-50%); display: inline-block; padding: 0.1rem 0.35rem; border-radius: 999px; background: #ef4444; color: white; font-size: 0.75rem; font-weight: 800; }
-.action-bar { position: absolute; z-index: 1; display: grid; align-content: start; gap: 0.1rem; overflow: hidden; padding: 0.45rem 0.5rem; border: 2px solid transparent; border-radius: 12px; text-align: left; color: #172033; box-shadow: 0 8px 18px #0f172a24; touch-action: manipulation; }
-.action-bar strong, .action-bar span, .action-bar small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.action-bar span, .action-bar small { font-size: 0.75rem; font-weight: 700; }
+.playhead { position: absolute; left: 56px; right: 0; z-index: 2; height: 0; border-top: 3px solid #ef4444; pointer-events: none; }
+.playhead span { position: sticky; left: 60px; transform: translateY(-50%); display: inline-block; padding: 0.1rem 0.35rem; border-radius: 999px; background: #ef4444; color: white; font-size: 0.75rem; font-weight: 800; }
+.action-bar { position: absolute; z-index: 1; overflow: hidden; padding: 0; border: 2px solid transparent; border-radius: 10px; color: transparent; box-shadow: 0 8px 18px #0f172a24; touch-action: manipulation; }
+.action-bar::after { content: ''; position: absolute; inset: 5px; border-radius: 999px; background: rgba(255,255,255,0.45); opacity: 0.65; }
 .action-bar.accelerator { background: #bbf7d0; }
 .action-bar.brake { background: #fecaca; }
 .action-bar.leftTurn, .action-bar.rightTurn { background: #bfdbfe; }
@@ -96,8 +98,11 @@ pre { max-height: 300px; overflow: auto; background: #0f172a; color: #d1fae5; bo
 
 @media (max-width: 820px) {
   .editor-stack .workspace { display: grid; }
-  .timeline-title-row { flex-direction: column; }
+  .timeline-title-row { flex-direction: column; gap: 0.6rem; }
   .timeline-scroll { max-height: 42vh; }
   .timeline-card { padding: 0.75rem; border-radius: 18px; }
+  .timeline-legend { font-size: 0.72rem; }
   .json-panel { margin-left: 0; margin-right: 0; }
 }
+
+.timeline-empty { display: grid; place-items: center; min-height: 8rem; padding: 1rem; border: 1px dashed #cbd5e1; border-radius: 16px; background: #f8fafc; color: #64748b; font-weight: 800; text-align: center; }

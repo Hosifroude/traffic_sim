@@ -19,7 +19,7 @@ export default function App() {
   const [scenario, setScenario] = useState<Scenario>(sampleScenario);
   const [time, setTime] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [selectedVehicleId, setSelectedVehicleId] = useState(sampleScenario.vehicles[0]?.id ?? '');
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string | null>(null);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const [editingActionId, setEditingActionId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -49,12 +49,17 @@ export default function App() {
   }, [activeTab, json]);
 
   const editingVehicleId = editingActionId ? parseActionId(editingActionId).vehicleId : selectedVehicleId;
-  const editingVehicle = scenario.vehicles.find((vehicle) => vehicle.id === editingVehicleId);
+  const editingVehicle = editingVehicleId ? scenario.vehicles.find((vehicle) => vehicle.id === editingVehicleId) : undefined;
   const editingEvent = editingActionId ? editingVehicle?.events[parseActionId(editingActionId).eventIndex] ?? null : null;
 
-  const openVehicleSettings = (vehicleId: string) => {
+  const selectVehicle = (vehicleId: string) => {
     setSelectedVehicleId(vehicleId);
+    setSelectedActionId(null);
     setEditingActionId(null);
+  };
+
+  const openVehicleSettings = (vehicleId: string) => {
+    selectVehicle(vehicleId);
     setDrawerOpen(true);
   };
 
@@ -68,6 +73,7 @@ export default function App() {
 
   const saveEvent = (event: VehicleEvent) => {
     const vehicleId = editingActionId ? parseActionId(editingActionId).vehicleId : selectedVehicleId;
+    if (!vehicleId) return;
     const eventIndex = editingActionId ? parseActionId(editingActionId).eventIndex : -1;
     setScenario((current) => ({
       ...current,
@@ -145,9 +151,9 @@ export default function App() {
       {activeTab === 'editor' ? (
         <div className="editor-stack">
           <div className="workspace">
-            <Stage scenario={scenario} states={states} selectedVehicleId={selectedVehicleId} collision={collision} onSelectVehicle={setSelectedVehicleId} onOpenVehicleSettings={openVehicleSettings} />
+            <Stage scenario={scenario} states={states} selectedVehicleId={selectedVehicleId} collision={collision} onSelectVehicle={selectVehicle} onOpenVehicleSettings={openVehicleSettings} />
           </div>
-          <TimelineGrid vehicles={scenario.vehicles} durationSec={scenario.durationSec} currentTime={time} selectedActionId={selectedActionId} onSelectAction={selectAction} onOpenAction={openActionSettings} onDeleteAction={deleteAction} />
+          <TimelineGrid vehicles={scenario.vehicles} durationSec={scenario.durationSec} currentTime={time} selectedTargetId={selectedVehicleId} selectedActionId={selectedActionId} onSelectAction={selectAction} onOpenAction={openActionSettings} onDeleteAction={deleteAction} />
         </div>
       ) : (
         <section className="json-panel">

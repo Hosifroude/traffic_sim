@@ -4,7 +4,7 @@ import { samplePath } from '../simulation/engine';
 interface Props {
   scenario: Scenario;
   states: SimulatedVehicleState[];
-  selectedVehicleId: string;
+  selectedVehicleId: string | null;
   collision: CollisionResult;
   onSelectVehicle: (id: string) => void;
   onOpenVehicleSettings: (id: string) => void;
