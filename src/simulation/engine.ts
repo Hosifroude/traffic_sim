@@ -14,16 +14,18 @@ function eventAt(events: VehicleEvent[], time: number): VehicleEvent | undefined
 function nextState(state: VehicleState, vehicle: Vehicle, simTime: number, dt: number): VehicleState {
   const event = eventAt(vehicle.events, simTime);
   let headingDeg = state.headingDeg;
-  let targetSpeed = state.speedKmh;
 
-  if (event) {
-    const progress = Math.min(1, Math.max(0, (simTime - event.time) / Math.max(event.durationSec, STEP_SEC)));
-    const adjustedTarget = event.turn === 'stop' ? 0 : event.targetSpeedKmh * BRAKE_FACTOR[event.brake];
-    targetSpeed = state.speedKmh + (adjustedTarget - state.speedKmh) * Math.min(1, dt / Math.max(0.1, event.durationSec - progress * event.durationSec));
-    if (event.turn === 'left') headingDeg -= TURN_RATE_DEG_PER_SEC * dt;
-    if (event.turn === 'right') headingDeg += TURN_RATE_DEG_PER_SEC * dt;
-    if (event.turn === 'stop') targetSpeed = Math.max(0, state.speedKmh - 40 * dt);
+  if (!event) {
+    return { ...state, speedKmh: 0 };
   }
+
+  let targetSpeed = state.speedKmh;
+  const progress = Math.min(1, Math.max(0, (simTime - event.time) / Math.max(event.durationSec, STEP_SEC)));
+  const adjustedTarget = event.turn === 'stop' ? 0 : event.targetSpeedKmh * BRAKE_FACTOR[event.brake];
+  targetSpeed = state.speedKmh + (adjustedTarget - state.speedKmh) * Math.min(1, dt / Math.max(0.1, event.durationSec - progress * event.durationSec));
+  if (event.turn === 'left') headingDeg -= TURN_RATE_DEG_PER_SEC * dt;
+  if (event.turn === 'right') headingDeg += TURN_RATE_DEG_PER_SEC * dt;
+  if (event.turn === 'stop') targetSpeed = Math.max(0, state.speedKmh - 40 * dt);
 
   const rad = (headingDeg * Math.PI) / 180;
   const distance = kmhToPxPerSec(Math.max(0, targetSpeed)) * dt;
@@ -36,7 +38,7 @@ function nextState(state: VehicleState, vehicle: Vehicle, simTime: number, dt: n
 }
 
 export function simulateVehicle(vehicle: Vehicle, time: number): SimulatedVehicleState {
-  let state: VehicleState = { ...vehicle.initialState };
+  let state: VehicleState = { ...vehicle.initialState, speedKmh: 0 };
   if (time < vehicle.startTime) {
     return { ...state, id: vehicle.id, name: vehicle.name, color: vehicle.color, length: vehicle.length, width: vehicle.width, active: false };
   }
