@@ -1,11 +1,10 @@
-import type { CollisionResult, Scenario, SimulatedVehicleState, Vehicle } from '../types';
+import type { Scenario, SimulatedVehicleState, Vehicle } from '../types';
 import { samplePath } from '../simulation/engine';
 
 interface Props {
   scenario: Scenario;
   states: SimulatedVehicleState[];
   selectedVehicleId: string | null;
-  collision: CollisionResult;
   onSelectVehicle: (id: string) => void;
   onOpenVehicleSettings: (id: string) => void;
 }
@@ -23,7 +22,7 @@ function Ghosts({ vehicle, durationSec }: { vehicle: Vehicle; durationSec: numbe
   );
 }
 
-export function Stage({ scenario, states, selectedVehicleId, collision, onSelectVehicle, onOpenVehicleSettings }: Props) {
+export function Stage({ scenario, states, selectedVehicleId, onSelectVehicle, onOpenVehicleSettings }: Props) {
   const { stageSize, roadWidth } = scenario.map;
   const half = stageSize / 2;
   return (
@@ -57,7 +56,6 @@ export function Stage({ scenario, states, selectedVehicleId, collision, onSelect
           </g>
         ))}
       </svg>
-      {collision.collided && <div className="collision-badge">衝突 {collision.time?.toFixed(1)}秒</div>}
     </section>
   );
 }

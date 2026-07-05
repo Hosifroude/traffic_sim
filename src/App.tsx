@@ -4,7 +4,6 @@ import { Controls } from './components/Controls';
 import { Stage } from './components/Stage';
 import { TimelineGrid } from './components/TimelineGrid';
 import { sampleScenario } from './sampleScenario';
-import { findFirstCollision } from './simulation/collision';
 import { simulateScenario } from './simulation/engine';
 import type { Scenario, VehicleEvent } from './types';
 import './styles.css';
@@ -41,7 +40,6 @@ export default function App() {
   }, [playing, scenario.durationSec]);
 
   const states = useMemo(() => simulateScenario(scenario, time), [scenario, time]);
-  const collision = useMemo(() => findFirstCollision(scenario), [scenario]);
   const json = useMemo(() => JSON.stringify(scenario, null, 2), [scenario]);
 
   useEffect(() => {
@@ -151,7 +149,7 @@ export default function App() {
       {activeTab === 'editor' ? (
         <div className="editor-stack">
           <div className="workspace">
-            <Stage scenario={scenario} states={states} selectedVehicleId={selectedVehicleId} collision={collision} onSelectVehicle={selectVehicle} onOpenVehicleSettings={openVehicleSettings} />
+            <Stage scenario={scenario} states={states} selectedVehicleId={selectedVehicleId} onSelectVehicle={selectVehicle} onOpenVehicleSettings={openVehicleSettings} />
           </div>
           <TimelineGrid vehicles={scenario.vehicles} durationSec={scenario.durationSec} currentTime={time} selectedTargetId={selectedVehicleId} selectedActionId={selectedActionId} onSelectAction={selectAction} onOpenAction={openActionSettings} onDeleteAction={deleteAction} />
         </div>
