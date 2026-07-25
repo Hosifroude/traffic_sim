@@ -110,7 +110,7 @@ pre { max-height: 300px; overflow: auto; background: #0f172a; color: #d1fae5; bo
 .timeline-scroll-horizontal { max-height: min(46vh, 420px); }
 .timeline-grid-horizontal { position: relative; min-width: 664px; background: #f8fafc; }
 .timeline-corner-horizontal { height: 36px; width: 104px; }
-.timeline-time-header { position: sticky; top: 0; z-index: 3; height: 36px; background: #1e293b; color: white; border-bottom: 1px solid #334155; }
+.timeline-time-header { position: absolute; top: 0; z-index: 3; height: 36px; background: #1e293b; color: white; border-bottom: 1px solid #334155; }
 .timeline-time-label { position: absolute; top: 0; height: 36px; min-width: 3rem; display: flex; align-items: center; padding-left: 0.35rem; border-left: 1px solid #475569; font-size: 0.78rem; font-weight: 800; }
 .timeline-body-horizontal { position: absolute; z-index: 0; pointer-events: none; }
 .time-tick-x { position: absolute; top: 0; bottom: 0; width: 1px; background: #e2e8f0; }
