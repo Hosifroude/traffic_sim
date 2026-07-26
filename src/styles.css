@@ -4,6 +4,7 @@ body { margin: 0; }
 button, input, select { font: inherit; }
 button { border: 0; border-radius: 12px; background: #172033; color: white; padding: 0.75rem 1rem; font-weight: 700; cursor: pointer; }
 button:active { transform: translateY(1px); }
+button:disabled { cursor: not-allowed; opacity: 0.45; }
 .app-shell { min-height: 100vh; padding: 1rem 1rem 6rem; }
 .app-header { display: flex; justify-content: space-between; align-items: center; max-width: 1180px; margin: 0 auto 1rem; }
 h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 2.4rem); }
@@ -65,6 +66,22 @@ pre { max-height: 300px; overflow: auto; background: #0f172a; color: #d1fae5; bo
 .tabs button { background: #e2e8f0; color: #172033; white-space: nowrap; }
 .tabs button.active { background: #2563eb; color: white; box-shadow: 0 10px 24px #2563eb33; }
 .editor-stack { max-width: 1180px; margin: 0 auto; display: grid; gap: 1rem; }
+.live-recorder { padding: 0.75rem; border: 1px solid #dbe3ee; border-radius: 18px; background: white; box-shadow: 0 10px 30px #0f172a12; }
+.live-recorder.recording { border-color: #ef4444; box-shadow: 0 0 0 3px #ef44441f, 0 10px 30px #0f172a12; }
+.recorder-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.recorder-header h2 { margin: 0; font-size: 1rem; }
+.recorder-header p, .recorder-help { color: #64748b; font-size: 0.78rem; }
+.record-button { display: flex; align-items: center; gap: 0.45rem; padding: 0.55rem 0.8rem; background: #172033; white-space: nowrap; }
+.recording .record-button { background: #dc2626; }
+.record-dot { width: 0.7rem; height: 0.7rem; border-radius: 999px; background: #ef4444; }
+.recording .record-dot { background: white; }
+.driving-pad { display: grid; grid-template-columns: minmax(4rem, 0.7fr) minmax(10rem, 2fr) minmax(4rem, 0.7fr); gap: 0.55rem; max-width: 620px; margin: 0.65rem auto 0; }
+.driving-pad button { min-height: 3.25rem; padding: 0.55rem; background: #334155; touch-action: none; user-select: none; }
+.driving-pad .pedals { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+.driving-pad .accelerator { background: #15803d; }
+.driving-pad .brake { background: #b91c1c; }
+.driving-pad button.pressed { transform: translateY(2px); filter: brightness(1.35); box-shadow: inset 0 0 0 3px #facc15; }
+.recorder-help { margin-top: 0.45rem; text-align: center; }
 .editor-stack .workspace { width: 100%; max-width: none; grid-template-columns: minmax(0, 1fr); }
 .timeline-card { background: white; border-radius: 20px; padding: 1rem; box-shadow: 0 14px 45px #0f172a1a; min-width: 0; }
 .timeline-title-row { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; margin-bottom: 0.75rem; }
@@ -103,6 +120,8 @@ pre { max-height: 300px; overflow: auto; background: #0f172a; color: #d1fae5; bo
   .timeline-card { padding: 0.75rem; border-radius: 18px; }
   .timeline-legend { font-size: 0.72rem; }
   .json-panel { margin-left: 0; margin-right: 0; }
+  .driving-pad { grid-template-columns: 4rem minmax(0, 1fr) 4rem; }
+  .driving-pad button { min-height: 3rem; padding: 0.4rem; font-size: 0.82rem; }
 }
 
 .timeline-empty { display: grid; place-items: center; min-height: 8rem; padding: 1rem; border: 1px dashed #cbd5e1; border-radius: 16px; background: #f8fafc; color: #64748b; font-weight: 800; text-align: center; }

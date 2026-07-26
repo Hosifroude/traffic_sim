@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActionDrawer } from './components/ActionDrawer';
 import { Controls } from './components/Controls';
+import { LiveRecorder, type LiveDrivingInput } from './components/LiveRecorder';
 import { Stage } from './components/Stage';
 import { TimelineGrid } from './components/TimelineGrid';
 import { sampleScenario } from './sampleScenario';
@@ -9,6 +10,7 @@ import type { Scenario, VehicleEvent } from './types';
 import './styles.css';
 
 const clampTime = (value: number, duration: number) => Number(Math.min(duration, Math.max(0, value)).toFixed(1));
+const EMPTY_DRIVING_INPUT: LiveDrivingInput = { accelerator: false, brake: false, steering: 'straight' };
 const parseActionId = (actionId: string) => {
   const [vehicleId, index] = actionId.split(':');
   return { vehicleId, eventIndex: Number(index) };
@@ -26,6 +28,15 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'editor' | 'json'>('editor');
   const [jsonDraft, setJsonDraft] = useState('');
   const [jsonError, setJsonError] = useState<string | null>(null);
+  const [recording, setRecording] = useState(false);
+  const [drivingInput, setDrivingInput] = useState<LiveDrivingInput>(EMPTY_DRIVING_INPUT);
+  const recordedSpeedRef = useRef(0);
+  const drivingInputRef = useRef(drivingInput);
+
+  const updateDrivingInput = useCallback((input: LiveDrivingInput) => {
+    drivingInputRef.current = input;
+    setDrivingInput(input);
+  }, []);
 
   useEffect(() => {
     if (!playing) return;
@@ -39,6 +50,45 @@ export default function App() {
     return () => window.clearInterval(id);
   }, [playing, scenario.durationSec]);
 
+  useEffect(() => {
+    if (!recording || !selectedVehicleId) return;
+    const id = window.setInterval(() => {
+      setTime((current) => {
+        const next = clampTime(current + 0.1, scenario.durationSec);
+        const controls = drivingInputRef.current;
+        let speed = recordedSpeedRef.current;
+        if (controls.brake) speed = Math.max(0, speed - 4);
+        else if (controls.accelerator) speed = Math.min(80, speed + 2);
+        recordedSpeedRef.current = speed;
+
+        const brake = controls.brake ? 'hard' as const : 'none' as const;
+        const turn = speed === 0 && controls.brake ? 'stop' as const : controls.steering;
+        const targetSpeedKmh = controls.brake && speed > 0 ? speed / 0.5 : speed;
+        const event: VehicleEvent = {
+          time: current,
+          durationSec: Math.max(0.1, next - current),
+          targetSpeedKmh,
+          turn,
+          brake,
+        };
+
+        setScenario((currentScenario) => ({
+          ...currentScenario,
+          vehicles: currentScenario.vehicles.map((vehicle) => vehicle.id === selectedVehicleId
+            ? { ...vehicle, events: [...vehicle.events, event] }
+            : vehicle),
+        }));
+
+        if (next >= scenario.durationSec) {
+          setRecording(false);
+          updateDrivingInput(EMPTY_DRIVING_INPUT);
+        }
+        return next;
+      });
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [recording, scenario.durationSec, selectedVehicleId, updateDrivingInput]);
+
   const states = useMemo(() => simulateScenario(scenario, time), [scenario, time]);
   const json = useMemo(() => JSON.stringify(scenario, null, 2), [scenario]);
 
@@ -51,9 +101,29 @@ export default function App() {
   const editingEvent = editingActionId ? editingVehicle?.events[parseActionId(editingActionId).eventIndex] ?? null : null;
 
   const selectVehicle = (vehicleId: string) => {
+    if (recording) return;
     setSelectedVehicleId(vehicleId);
     setSelectedActionId(null);
     setEditingActionId(null);
+  };
+
+  const toggleRecording = () => {
+    if (recording) {
+      setRecording(false);
+      updateDrivingInput(EMPTY_DRIVING_INPUT);
+      return;
+    }
+    if (!selectedVehicleId) return;
+    setPlaying(false);
+    setTime(0);
+    recordedSpeedRef.current = 0;
+    updateDrivingInput(EMPTY_DRIVING_INPUT);
+    setScenario((current) => ({
+      ...current,
+      vehicles: current.vehicles.map((vehicle) => vehicle.id === selectedVehicleId ? { ...vehicle, events: [] } : vehicle),
+    }));
+    setSelectedActionId(null);
+    setRecording(true);
   };
 
   const openVehicleSettings = (vehicleId: string) => {
@@ -151,6 +221,13 @@ export default function App() {
           <div className="workspace">
             <Stage scenario={scenario} states={states} selectedVehicleId={selectedVehicleId} onSelectVehicle={selectVehicle} onOpenVehicleSettings={openVehicleSettings} />
           </div>
+          <LiveRecorder
+            vehicleName={scenario.vehicles.find((vehicle) => vehicle.id === selectedVehicleId)?.name ?? null}
+            recording={recording}
+            input={drivingInput}
+            onInputChange={updateDrivingInput}
+            onToggleRecording={toggleRecording}
+          />
           <TimelineGrid vehicles={scenario.vehicles} durationSec={scenario.durationSec} currentTime={time} selectedTargetId={selectedVehicleId} selectedActionId={selectedActionId} onSelectAction={selectAction} onOpenAction={openActionSettings} onDeleteAction={deleteAction} />
         </div>
       ) : (
@@ -161,7 +238,7 @@ export default function App() {
         </section>
       )}
       <ActionDrawer open={drawerOpen} vehicle={editingVehicle} action={editingEvent} currentTime={time} onClose={() => setDrawerOpen(false)} onSave={saveEvent} />
-      <Controls time={time} duration={scenario.durationSec} playing={playing} onStep={(delta) => setTime((current) => clampTime(current + delta, scenario.durationSec))} onToggle={() => setPlaying((value) => !value)} onReset={() => { setPlaying(false); setTime(0); }} />
+      <Controls time={time} duration={scenario.durationSec} playing={playing} disabled={recording} onStep={(delta) => setTime((current) => clampTime(current + delta, scenario.durationSec))} onToggle={() => setPlaying((value) => !value)} onReset={() => { setPlaying(false); setTime(0); }} />
     </main>
   );
 }
